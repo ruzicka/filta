@@ -1,0 +1,32 @@
+{
+  "name": "filta",
+  "version": "1.0.0",
+  "description": "Content filtering",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ruzicka/filta.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ruzicka/filta/issues"
+  },
+  "homepage": "https://github.com/ruzicka/filta#readme",
+  "devDependencies": {
+    "tslint": "^5.12.0",
+    "tslint-eslint-rules": "^5.4.0",
+    "tslint-microsoft-contrib": "^6.0.0",
+    "typescript": "^3.2.2"
+  },
+  "dependencies": {
+    "@types/natural": "^0.2.33",
+    "@types/stemmer": "^1.0.1",
+    "natural": "^0.6.2",
+    "stem-porter": "0.0.1",
+    "stemmer": "^1.0.3"
+  }
+}
