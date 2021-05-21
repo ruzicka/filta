@@ -7,7 +7,6 @@ export enum EntityType {
   letterGroup = 'letterGroup',
 }
 
-
 export interface Entity {
   original: string,
   normalized: string,
@@ -50,40 +49,25 @@ const splitGeneral = (regex: RegExp, inputText: string, firstType: EntityType, s
   return arr
 }
 
-
-export const splitByWhitechar = (inputText: string) => {
+/**
+ * Splits input text by any whitespace or group of whitespace characters. These whitespace
+ * parts of the strings are also kept in the resulting array so it would be possible
+ * to reconstruct original input text.
+ * @param inputText
+ */
+const splitByWhitespace = (inputText: string) => {
   return splitGeneral(/([^\s]+)?(\s+)?/gm, inputText, EntityType.word, EntityType.whitespace)
 }
 
-export const splitByPunctuation = (inputText: string) => {
+/**
+ * Splits input text by any punctuation character or group of such characters. These
+ * parts of the strings are also kept in the resulting array so it would be possible
+ * to reconstruct original input text.
+ * @param inputText
+ */
+const splitByPunctuation = (inputText: string) => {
   const regex = new RegExp(`([^\\s${punctuationChars}]+)?([${punctuationChars}]+)?`, 'gm')
   return splitGeneral(regex, inputText, EntityType.word, EntityType.punctuation)
-}
-
-export const split = (inputText: string) => {
-  const arr = splitByWhitechar(inputText)
-  const arr2 = arr.reduce((acc: Entity[], current: Entity) => {
-    if (current.type === EntityType.word) {
-      const arr2 = splitByPunctuation(current.original)
-      if (arr2.length > 1) {
-        return acc.concat(arr2.map((entity) => ({ ...entity, index: current.index + entity.index })))
-      }
-    }
-    return acc.concat([current])
-  }, [])
-    .map((entity: Entity) => {
-      if (entity.type !== EntityType.word || entity.original.length > 1) {
-        return entity
-      }
-
-      return {
-        ...entity,
-        type: EntityType.letter
-      }
-    })
-
-  // return groupSingleLetters(arr2)
-  return arr2
 }
 
 const joinEntities = (entities: Entity[]) => {
@@ -118,7 +102,7 @@ const joinEntities = (entities: Entity[]) => {
   return [groupedLetters, ...reminder]
 }
 
-export const groupSingleLetters = (entities: Entity[]) => {
+const groupSingleLetters = (entities: Entity[]) => {
 
   let buffer: Entity[] = []
 
@@ -129,14 +113,12 @@ export const groupSingleLetters = (entities: Entity[]) => {
       buffer.length && console.log('buffer joined', joinedBuffer)
       const newAcc = [...acc, ...joinedBuffer, current]
       buffer = []
-      console.log('buffer:', buffer.map(ent => ent.original))
       return newAcc
     }
 
     if (current.type === EntityType.letter) {
       // přidat do bufferu, acc vrátit beze změny
       buffer.push(current)
-      console.log('buffer:', buffer.map(ent => ent.original))
       return acc
     }
 
@@ -144,7 +126,6 @@ export const groupSingleLetters = (entities: Entity[]) => {
     if (buffer.length > 0) {
       // přidat do bufferu, acc vrátit beze změny
       buffer.push(current)
-      console.log('buffer:', buffer.map(ent => ent.original))
       return acc
     } else {
       return [...acc, current]
@@ -152,6 +133,42 @@ export const groupSingleLetters = (entities: Entity[]) => {
     }
   }, [])
 
-  console.log('....')
   return [...result, ...joinEntities(buffer)]
+}
+
+/**
+ * Tokenizes input text by breaking it into array of categorized elements that can be later
+ * analysed.
+ * @param inputText
+ */
+export const tokenize = (inputText: string) => {
+
+  // break input text into array of words and whitespaces
+  const arr = splitByWhitespace(inputText)
+
+  // break every word in the array further into words and punctuation
+  const arrX = arr.reduce((acc: Entity[], current: Entity) => {
+    if (current.type === EntityType.word) {
+      const arr2 = splitByPunctuation(current.original)
+      if (arr2.length > 1) {
+        return acc.concat(arr2.map((entity) => ({ ...entity, index: current.index + entity.index })))
+      }
+    }
+    return acc.concat([current])
+  }, [])
+
+  // go over the array word containing just single character is converted into letter
+  const arrY = arrX.map((entity: Entity) => {
+      if (entity.type !== EntityType.word || entity.original.length > 1) {
+        return entity
+      }
+      return {
+        ...entity,
+        type: EntityType.letter
+      }
+    })
+
+  // Analyse array of tokens and if it finds a group of consecutive single letters (like C R A P)
+  // or C.R.A.P, it will join those together so they could be analysed as well.
+  return groupSingleLetters(arrY)
 }

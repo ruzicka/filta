@@ -14,8 +14,8 @@
 import {
   Entity,
   EntityType,
-  groupSingleLetters,
-  split,
+  // groupSingleLetters,
+  tokenize,
 } from './textUtils'
 
 const str = ` 
@@ -28,6 +28,6 @@ const str2 = `I said. ————-Thanks for reading———- - Be Literate -C
 // - Remove punctuation
 // - ignore single chars
 
-console.log(split(str2).filter((e: Entity) => e.type === EntityType.word || e.type === EntityType.letter))
-console.log('------')
-console.log(groupSingleLetters(split(str2)).filter((e: Entity) => e.type === EntityType.word || e.type === EntityType.letter))
+console.log(tokenize(str2))
+// console.log('------')
+// console.log(groupSingleLetters(tokenize(str2)).filter((e: Entity) => e.type === EntityType.word || e.type === EntityType.letter))
